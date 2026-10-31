@@ -1,0 +1,208 @@
+.scene-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.scene-root canvas {
+  display: block;
+  touch-action: none;
+}
+
+/*
+ * Scene overlays share one card style: cream card, dark cocoa text, hairline warm border, a small
+ * colour dot for status. 12px minimum so Vietnamese diacritics stay legible.
+ */
+.scene-root {
+  --card-bg: rgba(255, 251, 243, 0.96);
+  --card-ink: #3b2f26;
+  --card-muted: #7d6a5a;
+  --card-line: rgba(92, 66, 44, 0.22);
+  --card-shadow: 0 1px 2px rgba(70, 45, 20, 0.18), 0 3px 8px rgba(70, 45, 20, 0.12);
+  --card-font: system-ui, "Segoe UI", sans-serif;
+}
+
+.scene-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 140px;
+  max-width: 210px;
+  padding: 6px 10px 7px;
+  border: 1.5px solid #4a3a2d;
+  border-radius: 10px;
+  background: #fffbf3;
+  color: var(--card-ink);
+  font: 600 12px/1.3 var(--card-font);
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(74, 58, 45, 0.9), 0 6px 14px rgba(70, 45, 20, 0.2);
+  /* Anchor = tip of the tail, just above the lead's head. */
+  transform: translate(-50%, calc(-100% - 9px));
+  animation: scene-bubble-pop 0.25s ease-out;
+}
+
+.scene-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 9px;
+  height: 9px;
+  background: inherit;
+  border-right: 1.5px solid #4a3a2d;
+  border-bottom: 1.5px solid #4a3a2d;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.scene-bubble:hover,
+.scene-bubble:focus-visible {
+  background: #fff2dc;
+  outline: none;
+}
+
+.scene-bubble-team {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--card-muted);
+}
+
+.scene-bubble-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b4553a;
+  white-space: nowrap;
+}
+
+.scene-bubble-text {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--card-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@keyframes scene-bubble-pop {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+.scene-sign {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-line);
+  color: var(--card-ink);
+  font: 700 12px/1.3 var(--card-font);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--card-shadow);
+}
+
+.scene-sign[data-selected="true"] {
+  border-color: #4a3a2d;
+  box-shadow: 0 0 0 1px #4a3a2d, var(--card-shadow);
+}
+
+.scene-sign i,
+.scene-plate i {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.scene-plate {
+  display: flex;
+  flex-direction: column;
+  max-width: 160px;
+  padding: 2px 7px 3px;
+  border-radius: 6px;
+  border: 1px solid var(--card-line);
+  background: var(--card-bg);
+  color: var(--card-ink);
+  font: 500 12px/1.25 var(--card-font);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--card-shadow);
+  /* Anchor = bottom centre, just above the head. */
+  transform: translate(-50%, -100%);
+}
+
+.scene-plate b {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.scene-plate span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--card-muted);
+}
+
+/* "+N" subagents beyond the pod's seats, inside the team sign. */
+.scene-more {
+  margin-left: 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(92, 66, 44, 0.12);
+  color: var(--card-muted);
+  font-weight: 700;
+}
+
+.scene-work {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #4a3a2d;
+  color: #fffaf2;
+  font: 600 12px/1.25 var(--card-font);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(59, 47, 38, 0.3);
+}
+
+.scene-work:hover,
+.scene-work:focus-visible {
+  background: #63503f;
+  outline: none;
+}
+
+/* Dev-only (?stats=1): small and quiet, never competing with the scene. */
+.scene-stats {
+  position: fixed;
+  left: 10px;
+  top: 40px;
+  z-index: 20;
+  margin: 0;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: rgba(59, 47, 38, 0.18);
+  color: rgba(59, 47, 38, 0.72);
+  font: 500 10px/1.35 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+}
+
+.scene-plate[hidden] {
+  display: none;
+}
+
+.scene-sign[hidden],
+.scene-work[hidden],
+.scene-bubble[hidden] {
+  display: none;
+}

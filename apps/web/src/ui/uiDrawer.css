@@ -1,0 +1,37 @@
+.ui-drawer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px 20px 0 0;
+  border-bottom: 0;
+}
+.ui-drawer-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 10px;
+  background: none;
+  border: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ui-drawer-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--ui-border); }
+.ui-drawer-list { list-style: none; margin: 0; padding: 0 10px 12px; overflow-y: auto; display: grid; gap: 8px; }
+.ui-team-card { border: 1px solid var(--ui-border); border-radius: 14px; background: #fffdf8; padding: 8px; }
+.ui-team-card[data-selected="true"] { border-color: var(--ui-accent); border-width: 2px; }
+.ui-team-main { width: 100%; display: flex; align-items: center; gap: 10px; background: none; border: 0; cursor: pointer; text-align: left; }
+.ui-team-name { flex: 1; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ui-team-actions { display: flex; gap: 8px; margin-top: 8px; }
+.ui-team-actions .ui-btn { flex: 1; padding: 10px 8px; }
+.ui-status-tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; background: #f3e6d0; font-size: 12px; }
+.ui-dot-s { width: 8px; height: 8px; border-radius: 50%; background: #aaa; }
+.ui-status-tag[data-status="working"] .ui-dot-s { background: #4c9be8; }
+.ui-status-tag[data-status="idle"] .ui-dot-s { background: var(--ui-ok); }
+.ui-status-tag[data-status="blocked"] .ui-dot-s { background: var(--ui-bad); }
+.ui-status-tag[data-status="done"] .ui-dot-s { background: #9b7fd6; }
+
