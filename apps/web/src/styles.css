@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, "Segoe UI", "Be Vietnam Pro", sans-serif;
+  background: #f6e9d7;
+  color: #3b2f26;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+.shell {
+  height: 100%;
+  padding: 16px;
+  overflow: auto;
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar h1 {
+  margin: 0 12px 0 0;
+  font-size: 18px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff6e8;
+  border: 1px solid #d9c3a5;
+  font-size: 13px;
+}
+
+.pill[data-state="open"],
+.pill[data-state="mock"] {
+  border-color: #6fae6f;
+}
+
+.pill[data-state="reconnecting"],
+.pill[data-state="connecting"] {
+  border-color: #d9a441;
+}
+
+.pill[data-state="closed"] {
+  border-color: #c8584f;
+}
+
+.team-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.team-list li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fffaf2;
+  border: 1px solid #e3d2b8;
+}
+
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #3b2f26;
+  color: #fffaf2;
+  font-size: 14px;
+}
+
+.toast-error {
+  background: #8e2f2a;
+}

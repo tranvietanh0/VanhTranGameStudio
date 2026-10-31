@@ -1,0 +1,126 @@
+.scene-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.scene-root canvas {
+  display: block;
+  touch-action: none;
+}
+
+.scene-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 220px;
+  padding: 8px 12px;
+  border: 2px solid #3b2f26;
+  border-radius: 14px;
+  background: #fffaf2;
+  color: #3b2f26;
+  font: 600 13px/1.3 system-ui, "Segoe UI", sans-serif;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #3b2f26;
+  animation: scene-bubble-pop 0.25s ease-out;
+}
+
+.scene-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 12px;
+  height: 12px;
+  background: #fffaf2;
+  border-right: 2px solid #3b2f26;
+  border-bottom: 2px solid #3b2f26;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.scene-bubble:hover,
+.scene-bubble:focus-visible {
+  background: #fff1d6;
+  outline: none;
+}
+
+.scene-bubble-title {
+  color: #c8443c;
+  white-space: nowrap;
+}
+
+.scene-bubble-text {
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+@keyframes scene-bubble-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+.scene-sign {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.92);
+  border: 1px solid #d9c3a5;
+  color: #3b2f26;
+  font: 600 11px/1.4 system-ui, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.scene-sign[data-selected="true"] {
+  border-color: #3b2f26;
+  background: #fff1d6;
+}
+
+.scene-sign i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.scene-work {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  background: #3b2f26;
+  color: #fffaf2;
+  font: 600 13px/1.2 system-ui, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(59, 47, 38, 0.35);
+}
+
+.scene-work:hover,
+.scene-work:focus-visible {
+  background: #5a4636;
+  outline: none;
+}
+
+.scene-stats {
+  position: fixed;
+  left: 12px;
+  top: 64px;
+  z-index: 20;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(20, 16, 12, 0.78);
+  color: #b8f5c8;
+  font: 11px/1.35 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+}

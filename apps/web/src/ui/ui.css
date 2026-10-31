@@ -1,0 +1,183 @@
+.ui-layer {
+  --ui-bg: rgba(255, 248, 236, 0.94);
+  --ui-border: #e2c9a3;
+  --ui-ink: #3b2f26;
+  --ui-muted: #8a7766;
+  --ui-accent: #f2a65a;
+  --ui-accent-ink: #4a2c0e;
+  --ui-ok: #6fae6f;
+  --ui-bad: #d9534f;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  color: var(--ui-ink);
+  font-size: 14px;
+}
+
+.ui-layer button,
+.ui-layer input,
+.ui-layer textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.ui-widget {
+  pointer-events: auto;
+  background: var(--ui-bg);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(70, 45, 20, 0.22);
+  backdrop-filter: blur(6px);
+}
+
+.ui-muted {
+  color: var(--ui-muted);
+  padding: 6px 4px;
+}
+
+.ui-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--ui-border);
+  background: #fffdf8;
+  font-weight: 600;
+  box-shadow: 0 2px 0 var(--ui-border);
+}
+
+.ui-btn:hover:not(:disabled) { background: #fff1d9; }
+.ui-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+.ui-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ui-btn-primary { background: var(--ui-accent); border-color: #d98a3a; color: var(--ui-accent-ink); box-shadow: 0 2px 0 #d98a3a; }
+.ui-btn-primary:hover:not(:disabled) { background: #f6b571; }
+.ui-btn-danger { background: #f7d6d2; border-color: #d98a84; box-shadow: 0 2px 0 #d98a84; }
+
+.ui-status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+}
+
+.ui-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ui-bad); }
+.ui-dot[data-on="true"] { background: var(--ui-ok); }
+.ui-sep { width: 1px; height: 14px; background: var(--ui-border); }
+
+.ui-add-team {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+}
+
+.ui-inbox {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 300px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ui-inbox-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: none;
+  border: 0;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ui-badge {
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ui-bad);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+}
+.ui-badge[data-empty="true"] { background: var(--ui-muted); }
+
+.ui-inbox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ui-inbox-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fffdf8;
+  cursor: pointer;
+  text-align: left;
+}
+.ui-inbox-row:hover { background: #fff1d9; }
+.ui-inbox-text { display: flex; flex-direction: column; min-width: 0; }
+.ui-inbox-text span { color: var(--ui-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ui-avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(70, 45, 20, 0.3);
+}
+.ui-avatar-sm { width: 34px; height: 34px; font-size: 13px; border-width: 2px; }
+
+.ui-toasts {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-toast {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #3b2f26;
+  color: #fffaf2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.ui-toast[data-tone="ok"] { background: #3f7a45; }
+.ui-toast[data-tone="error"] { background: #a8382f; }
+
+@media (max-width: 767px), (pointer: coarse) {
+  .ui-status { max-width: calc(100% - 24px); flex-wrap: wrap; border-radius: 16px; }
+  .ui-inbox { top: 56px; right: 12px; left: 12px; width: auto; max-height: 45vh; }
+  .ui-add-team { left: auto; right: 12px; bottom: 76px; }
+  .ui-toasts { bottom: 76px; max-width: calc(100% - 24px); }
+  .ui-btn { min-height: 44px; }
+}
