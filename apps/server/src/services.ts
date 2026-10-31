@@ -7,12 +7,14 @@ import { logError, logInfo } from "./log.ts";
 import { herdrCall, type HerdrCall } from "./herdr/rpc.ts";
 import { HerdrSync } from "./herdr/sync.ts";
 import { snapshotToDrafts } from "./teams/mapping.ts";
+import { MEMBER_SWEEP_MS, MemberTracker } from "./teams/members.ts";
 import { SlotStore } from "./teams/slots.ts";
 import { TeamRegistry } from "./teams/registry.ts";
 import { TerminalBridge } from "./terminal/bridge.ts";
 import { QuestionTracker } from "./questions/tracker.ts";
 import { readScreenTail } from "./questions/screen.ts";
 import { hooksSettingsPath, officeFilePath } from "./paths.ts";
+import type { HookEvent } from "@studio/shared";
 
 /** Everything a request handler needs. Built once per process. */
 export interface StudioServices {
@@ -22,8 +24,17 @@ export interface StudioServices {
   registry: TeamRegistry;
   bridge: TerminalBridge;
   tracker: QuestionTracker;
+  members: MemberTracker;
   sync: HerdrSync;
   hooksSettingsFile: string;
+  /** Stops the member sweep timer; a no-op until startServices runs. */
+  stopSweep: () => void;
+}
+
+/** Fans one Claude hook event out to the trackers that care about it. */
+export function routeHookEvent(services: StudioServices, event: HookEvent): Promise<void> {
+  services.members.onHookEvent(event);
+  return services.tracker.onHookEvent(event);
 }
 
 /**
@@ -50,14 +61,22 @@ export function createServices(config: StudioConfig, call: HerdrCall = herdrCall
     isKnownTeam: (teamId) => registry.get(teamId) !== undefined,
   });
 
+  const members = new MemberTracker({
+    onChange: (paneId, list) => {
+      registry.setMembers(paneId, list);
+    },
+  });
+
   registry.subscribe((event) => {
     if (event.type === "team.upsert") {
       hub.broadcast({ type: "team.upsert", team: event.team });
       tracker.onStatus(event.team.id, event.team.status);
+      members.onAgentChange(event.team.id, event.team.agent);
       return;
     }
     hub.broadcast({ type: "team.remove", teamId: event.teamId });
     tracker.onTeamRemoved(event.teamId);
+    members.onPaneRemoved(event.teamId);
     bridge.endTeam(event.teamId, "team removed");
   });
 
@@ -86,8 +105,10 @@ export function createServices(config: StudioConfig, call: HerdrCall = herdrCall
     registry,
     bridge,
     tracker,
+    members,
     sync,
     hooksSettingsFile: hooksSettingsPath(config.dataDir),
+    stopSweep: () => {},
   };
 }
 
@@ -101,10 +122,14 @@ export function startServices(services: StudioServices): void {
     dataDir: config.dataDir,
   });
   logInfo("hooks", "wrote Claude hook settings", services.hooksSettingsFile);
+  const sweep = setInterval(() => services.members.sweep(), MEMBER_SWEEP_MS);
+  sweep.unref();
+  services.stopSweep = () => clearInterval(sweep);
   services.sync.start();
 }
 
 export function stopServices(services: StudioServices): void {
+  services.stopSweep();
   try {
     services.sync.stop();
   } catch (err) {

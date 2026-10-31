@@ -18,6 +18,7 @@ const HOOK_EVENT_NAMES: ReadonlySet<string> = new Set([
   "PostToolUse",
   "Notification",
   "Stop",
+  "SubagentStart",
   "SubagentStop",
 ]);
 

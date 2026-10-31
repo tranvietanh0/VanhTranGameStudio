@@ -1,7 +1,14 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-export const HOOK_EVENTS = ["PreToolUse", "PostToolUse", "Notification", "Stop"] as const;
+export const HOOK_EVENTS = [
+  "PreToolUse",
+  "PostToolUse",
+  "Notification",
+  "Stop",
+  "SubagentStart",
+  "SubagentStop",
+] as const;
 export type HookEventName = (typeof HOOK_EVENTS)[number];
 
 export interface HooksSettingsOptions {
@@ -38,10 +45,12 @@ export function buildHooksSettings(opts: HooksSettingsOptions): Record<string, u
   });
   return {
     hooks: {
-      PreToolUse: [entry("PreToolUse", "AskUserQuestion")],
+      PreToolUse: [entry("PreToolUse", "AskUserQuestion"), entry("PreToolUse", "Agent|Task")],
       PostToolUse: [entry("PostToolUse", "AskUserQuestion")],
       Notification: [entry("Notification")],
       Stop: [entry("Stop")],
+      SubagentStart: [entry("SubagentStart")],
+      SubagentStop: [entry("SubagentStop")],
     },
   };
 }

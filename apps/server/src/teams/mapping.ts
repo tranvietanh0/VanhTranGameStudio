@@ -30,6 +30,8 @@ export function snapshotToDrafts(snapshot: RawSnapshot): TeamDraft[] {
       projectName: projectNameFrom(cwd, workspaceLabel),
       agent: agents.get(pane.paneId) ?? null,
       status: pane.agentStatus satisfies AgentStatus,
+      // Live subagents come from hooks, not herdr; the registry fills them in.
+      members: [],
     };
   });
 }

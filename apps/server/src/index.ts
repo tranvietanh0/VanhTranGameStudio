@@ -2,7 +2,7 @@ import { loadConfig } from "./config.ts";
 import type { ClientData } from "./hub.ts";
 import { createHttpHandler } from "./http.ts";
 import { logInfo, logWarn } from "./log.ts";
-import { createServices, startServices, stopServices } from "./services.ts";
+import { createServices, routeHookEvent, startServices, stopServices } from "./services.ts";
 import { createWsHandler } from "./ws.ts";
 import { isLoopback } from "./auth.ts";
 
@@ -15,7 +15,7 @@ const server = Bun.serve<ClientData>({
   fetch: createHttpHandler({
     token: config.token,
     webDist: config.webDist,
-    onHook: (event) => services.tracker.onHookEvent(event),
+    onHook: (event) => routeHookEvent(services, event),
   }),
   websocket: createWsHandler(services),
 });
