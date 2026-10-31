@@ -1,19 +1,14 @@
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
-import type { Group } from "three";
+import { useEffect } from "react";
 import { useOfficeStore } from "../store/officeStore";
 import { advanceAlongPath, screenToWorldDir, stepWithCollision, WALK_SPEED } from "./ceoMotion";
-import { ceoGeometry } from "./furniture";
-import { MATERIALS } from "./instancing";
 import { ceo, focusCeo, getWalkGrid, keys, wakeScene } from "./runtime";
-import { shadowPlane } from "./Shadows";
 
 const KEY_MAP: Record<string, keyof typeof keys> = {
   KeyW: "up", ArrowUp: "up", KeyS: "down", ArrowDown: "down",
   KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right",
 };
 const TURN_RATE = 14;
-const BOB_HEIGHT = 0.06;
 
 /** Keys go to the CEO only when nothing else wants them (terminal, inputs, dialogs). */
 function keyboardFree(e: KeyboardEvent): boolean {
@@ -62,10 +57,11 @@ function shortestAngle(from: number, to: number): number {
   return d;
 }
 
-/** The CEO avatar: A* path following, WASD/arrows with wall sliding, walk bob, turn smoothing. */
+/**
+ * The CEO's movement: A* path following, WASD/arrows with wall sliding, turn smoothing. Writes the
+ * shared `ceo` state; the character itself (walk/idle animation) is rendered by the crowd.
+ */
 export function Ceo() {
-  const group = useRef<Group>(null);
-  const body = useRef<Group>(null);
   useMovementKeys();
 
   useFrame((state, rawDt) => {
@@ -95,26 +91,11 @@ export function Ceo() {
     const turn = heading === null ? 0 : shortestAngle(ceo.heading, heading);
     ceo.heading += turn * Math.min(1, dt * TURN_RATE);
     ceo.moving = moving;
-    ceo.bobPhase = moving ? ceo.bobPhase + dt * 13 : 0;
-
-    const g = group.current;
-    if (g) {
-      g.position.set(ceo.x, 0, ceo.z);
-      g.rotation.y = ceo.heading;
-    }
-    if (body.current) body.current.position.y = Math.abs(Math.sin(ceo.bobPhase)) * BOB_HEIGHT;
     if (moving || Math.abs(turn) > 0.01) state.invalidate();
   });
 
   // Keys pressed while the tab was hidden or a frame was missed: make sure we start moving.
   useEffect(() => wakeScene(), []);
 
-  return (
-    <group ref={group}>
-      <group ref={body}>
-        <mesh geometry={ceoGeometry()} material={MATERIALS.vertex} raycast={() => null} />
-      </group>
-      <mesh geometry={shadowPlane()} material={MATERIALS.shadow} scale={[0.9, 1, 0.9]} renderOrder={1} raycast={() => null} />
-    </group>
-  );
+  return null;
 }

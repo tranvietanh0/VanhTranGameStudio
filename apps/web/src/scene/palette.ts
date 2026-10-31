@@ -9,39 +9,80 @@ export const STATUS_COLOR: Record<AgentStatus, string> = {
   unknown: "#9aa0a6",
 };
 
-/** Warm pastel diorama palette. */
+/**
+ * One warm palette for the whole office: light oak floor, cream plaster, sage wainscot, and muted
+ * terracotta / sage / oat accents. Every rug and fabric comes from the same few hues so nothing
+ * shouts over the characters.
+ */
 export const PALETTE = {
-  background: "#f3e6d3",
-  floor: "#e9d2b0",
-  floorCeo: "#d9c7e6",
-  wall: "#f7ede0",
-  wallTrim: "#c9a882",
-  glass: "#bfe3f2",
-  glassFrame: "#8fa7b3",
-  rugLounge: "#f2b5a7",
-  rugCeo: "#a7c7e7",
-  deskTop: "#e8c8a0",
-  deskLeg: "#9c7a5b",
-  chair: "#7fa8c9",
-  chairBase: "#5b5f66",
-  monitor: "#3d3f45",
-  pot: "#d98e6a",
-  leaf: "#7cbf7a",
-  sofa: "#e7a08f",
-  bookshelf: "#b48a67",
-  books: ["#f2c14e", "#7fa8c9", "#e7a08f", "#8cc6a1"],
-  bossDesk: "#8b6446",
-  bossChair: "#3f3a4a",
-  cooler: "#dfe9f2",
-  skin: ["#f6d3b8", "#eebc98", "#d9a07a", "#b97f5a"],
-  hair: ["#3b2f26", "#5a3e2b", "#2b2b33", "#8a5a3b", "#c9a35a"],
-  shirts: ["#f4a6a6", "#a6c8f4", "#b8e0b0", "#f4d8a6", "#d0b8f0", "#a6e4e0", "#f4c2e0", "#c8d6a0"],
-  ceoSuit: "#2f3b5c",
-  ceoShirt: "#fdfbf7",
-  ceoTie: "#d8434a",
-  ceoSkin: "#f1c9a5",
-  ceoHair: "#2a2320",
+  background: "#efe3d0",
+  floorPlank: "#cdb18e",
+  floorGap: "#b09678",
+  floorCeo: "#bf9a74",
+  floorLounge: "#e6cca6",
+  wall: "#f8efe1",
+  wallPanel: "#b4c29f",
+  wallTrim: "#a07b5a",
+  wallCap: "#8c6b4d",
+  windowFrame: "#fffaf2",
+  skyTop: "#bfe0f2",
+  skyBottom: "#fff4dc",
+  glassFrame: "#8a6f58",
+  glass: "#e3f0ef",
+  door: "#b5835a",
+  screenOff: "#3a3f44",
+  screenMember: "#a8dcf5",
+  /** Pod rugs: oat, sage, terracotta, sand, dusty clay, grey-sage (muted, same value range). */
+  podRugs: ["#e6d6bb", "#c8d1b6", "#dfc0aa", "#e9dbb6", "#d9c6b8", "#cbd2c4"],
+  whiteboard: "#fbfaf6",
+  meetingTable: "#c99a6b",
+  counterTop: "#f1e8da",
+  planter: "#b8936c",
+  soil: "#6b5443",
 } as const;
+
+/**
+ * Kenney furniture material name → colour, re-tuned to the palette above. Unlisted materials keep
+ * the kit colour. Named tint sets override per placement.
+ */
+export const KIT_COLORS: Record<string, string> = {
+  wood: "#f0dcba",
+  woodDark: "#c9a07a",
+  metal: "#eceae4",
+  metalMedium: "#a5a39b",
+  metalDark: "#4f5254",
+  metalLight: "#f6f4ef",
+  carpet: "#d4917a",
+  carpetDarker: "#bf7b65",
+  carpetBlue: "#9cae8d",
+  carpetWhite: "#fbf7f0",
+  plant: "#6e9f5c",
+  lamp: "#ffe9bf",
+};
+
+export const KIT_TINTS: Record<string, Record<string, string>> = {
+  /** Lead's office chair. */
+  lead: { carpet: "#d98f66" },
+  /** Member office chairs. */
+  member: { carpet: "#a9b79a" },
+  boss: { carpet: "#6b5546", metalMedium: "#5c544c" },
+  ceoRug: { carpet: "#e4d2b4", carpetDarker: "#cdb38c" },
+  loungeRug: { carpet: "#e8dcc4", carpetDarker: "#cdb593" },
+  sageRug: { carpet: "#c9d1b6", carpetDarker: "#b3bd9c" },
+  sage: { carpet: "#a9b79a", carpetBlue: "#a9b79a" },
+  oat: { carpet: "#e8d8bb", carpetBlue: "#e8d8bb" },
+  ...Object.fromEntries(PALETTE.podRugs.map((hex, i) => [`pod${i}`, { carpet: hex, carpetDarker: hex }])),
+};
+
+/** Materials that glow (unlit, no tone mapping) instead of being lit. */
+export const KIT_GLOW = new Set(["lamp"]);
+/** Materials rendered with the transparent glass material. */
+export const KIT_GLASS = new Set(["glass"]);
+
+/** Character variants (root node names in characters.glb). */
+export const CEO_VARIANT = "male-d";
+export const LEAD_VARIANTS = ["female-d", "male-a", "female-f"] as const;
+export const MEMBER_VARIANTS = ["female-b", "male-f", "female-c", "male-b", "male-e"] as const;
 
 /** Small stable string hash (FNV-1a) used to pick per-team colours. */
 export function hashString(s: string): number {
@@ -56,3 +97,12 @@ export function hashString(s: string): number {
 export function pick<T>(list: readonly T[], seed: number): T {
   return list[seed % list.length] as T;
 }
+
+/** Member variant + nameplate dot colour per agent type, so the same kind of agent looks the same. */
+export function memberStyle(agentType: string): { variant: string; accent: string } {
+  const seed = hashString(agentType.toLowerCase());
+  return { variant: pick(MEMBER_VARIANTS, seed), accent: pick(ACCENTS, seed >>> 4) };
+}
+
+/** Muted dot colours, same value range as the palette accents. */
+const ACCENTS = ["#c9765c", "#6f93b0", "#7ea36b", "#c99a4a", "#9a82ad", "#5f9e98"] as const;

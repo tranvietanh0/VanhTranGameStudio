@@ -54,36 +54,48 @@
 .ui-btn-primary:hover:not(:disabled) { background: #f6b571; }
 .ui-btn-danger { background: #f7d6d2; border-color: #d98a84; box-shadow: 0 2px 0 #d98a84; }
 
+/* Top-corner widgets: compact cream chips, 12px text. */
 .ui-status {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 10px;
+  left: 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
+  gap: 6px;
+  padding: 3px 10px;
+  border-width: 1px;
   border-radius: 999px;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(70, 45, 20, 0.14);
 }
 
-.ui-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ui-bad); }
+.ui-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-bad); }
 .ui-dot[data-on="true"] { background: var(--ui-ok); }
-.ui-sep { width: 1px; height: 14px; background: var(--ui-border); }
+.ui-sep { width: 1px; height: 11px; background: var(--ui-border); }
 
 .ui-add-team {
   position: absolute;
-  left: 12px;
-  bottom: 12px;
+  left: 10px;
+  bottom: 10px;
+  padding: 5px 12px;
+  border-width: 1px;
+  border-radius: 999px;
+  font-size: 13px;
 }
 
 .ui-inbox {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 300px;
+  top: 10px;
+  right: 10px;
+  width: 248px;
   max-height: 60vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-width: 1px;
+  border-radius: 12px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(70, 45, 20, 0.16);
 }
 
 .ui-inbox-head {
@@ -91,7 +103,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 5px 8px 5px 11px;
   background: none;
   border: 0;
   font-weight: 700;
@@ -100,34 +112,37 @@
 }
 
 .ui-badge {
-  min-width: 24px;
-  padding: 2px 8px;
+  min-width: 18px;
+  padding: 0 6px;
   border-radius: 999px;
   background: var(--ui-bad);
   color: #fff;
   text-align: center;
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 18px;
 }
 .ui-badge[data-empty="true"] { background: var(--ui-muted); }
 
 .ui-inbox-list {
   list-style: none;
   margin: 0;
-  padding: 0 8px 8px;
+  padding: 0 6px 6px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
+
+.ui-inbox .ui-muted { padding: 0 5px 2px; font-size: 12px; }
 
 .ui-inbox-row {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
+  gap: 8px;
+  padding: 5px 6px;
   border: 1px solid var(--ui-border);
-  border-radius: 12px;
+  border-radius: 9px;
   background: #fffdf8;
   cursor: pointer;
   text-align: left;
@@ -148,7 +163,7 @@
   border: 3px solid #fff;
   box-shadow: 0 2px 6px rgba(70, 45, 20, 0.3);
 }
-.ui-avatar-sm { width: 34px; height: 34px; font-size: 13px; border-width: 2px; }
+.ui-avatar-sm { width: 26px; height: 26px; font-size: 11px; border-width: 2px; }
 
 .ui-toasts {
   position: absolute;

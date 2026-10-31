@@ -1,7 +1,4 @@
-import {
-  Color, DoubleSide, InstancedBufferAttribute, MeshBasicMaterial, MeshLambertMaterial, type InstancedMesh,
-} from "three";
-import { getShadowTexture } from "./geometry";
+import { DoubleSide, InstancedBufferAttribute, MeshBasicMaterial, MeshStandardMaterial, type InstancedMesh } from "three";
 import { PALETTE } from "./palette";
 
 /** Instance buffer capacity: powers of two ≥ 16, so adding a team rarely recreates the mesh. */
@@ -34,18 +31,17 @@ export function commitColors(mesh: InstancedMesh): void {
 
 /** Shared materials (module singletons: one program per feature set, reused by every mesh). */
 export const MATERIALS = {
-  /** Lit, vertex-coloured: static office and merged furniture. */
-  vertex: new MeshLambertMaterial({ vertexColors: true }),
-  /** Lit, white base so instanceColor carries the colour (characters). */
-  plain: new MeshLambertMaterial({ color: "#ffffff" }),
-  /** Unlit: the monitor screens read as glowing without bloom. */
+  /** Lit, vertex-coloured, shadowed: the whole merged static office. */
+  solid: new MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0 }),
+  /** Unlit and not tone-mapped: window daylight, lamp shades. */
+  glow: new MeshBasicMaterial({ vertexColors: true, toneMapped: false }),
+  /** Unlit: monitor screens read as glowing without bloom. */
   screen: new MeshBasicMaterial({ color: "#ffffff", toneMapped: false }),
-  glass: new MeshLambertMaterial({
-    vertexColors: true, transparent: true, opacity: 0.32, depthWrite: false, side: DoubleSide,
+  glass: new MeshStandardMaterial({
+    vertexColors: true, transparent: true, opacity: 0.22, roughness: 0.08, metalness: 0, depthWrite: false, side: DoubleSide,
   }),
-  shadow: new MeshBasicMaterial({
-    map: getShadowTexture(), transparent: true, depthWrite: false, color: new Color("#ffffff"),
-  }),
+  /** Invisible but raycastable hit volumes (no draw call). */
+  hit: new MeshBasicMaterial({ visible: false }),
 };
 
 export const BACKGROUND = PALETTE.background;

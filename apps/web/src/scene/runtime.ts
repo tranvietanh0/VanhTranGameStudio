@@ -10,15 +10,24 @@ export const ceo = {
   z: CEO_SPAWN.z as number,
   heading: 0,
   path: [] as Point[],
-  /** True while walking (path or keys); drives the bob and keeps frames coming. */
+  /** True while walking (path or keys); drives the walk animation and keeps frames coming. */
   moving: false,
-  bobPhase: 0,
 };
 
 export type FocusMode = "ceo" | "point";
 
 /** What the camera centres on: the CEO, or a fixed point (a selected desk). */
 export const focus = { mode: "ceo" as FocusMode, x: CEO_SPAWN.x as number, z: CEO_SPAWN.z as number };
+
+/** Team pod under the mouse pointer (desktop hover), read by overlays on rendered frames. */
+export const hover = { teamId: null as string | null };
+
+/** Sets the hovered pod and requests one frame so overlays can react. No-op when unchanged. */
+export function setHoverTeam(teamId: string | null): void {
+  if (hover.teamId === teamId) return;
+  hover.teamId = teamId;
+  wake();
+}
 
 /** Max pointer travel (px) between down and up for a press to count as a click. */
 export const CLICK_SLOP_PX = 8;
@@ -78,4 +87,30 @@ export function isTapSuppressed(now = performance.now()): boolean {
 
 export function getWalkGrid(): Grid | null {
   return walkGrid;
+}
+
+/** Throttled animation frame rate (typing, waving, blocked pulse): ~15 fps. */
+export const TICK_MS = 66;
+const tickSources = new Set<string>();
+let tickTimer: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Named reasons to keep rendering at TICK_MS. The interval exists only while at least one source
+ * is on, and skips ticks while the tab is hidden, so an idle office schedules nothing.
+ */
+export function setTickSource(name: string, on: boolean): void {
+  if (on) tickSources.add(name);
+  else tickSources.delete(name);
+  if (tickSources.size > 0 && tickTimer === null) {
+    tickTimer = setInterval(() => {
+      if (!document.hidden) wake();
+    }, TICK_MS);
+  } else if (tickSources.size === 0 && tickTimer !== null) {
+    clearInterval(tickTimer);
+    tickTimer = null;
+  }
+}
+
+export function isTicking(): boolean {
+  return tickTimer !== null;
 }

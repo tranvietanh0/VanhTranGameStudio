@@ -15,6 +15,13 @@ const OFFSET = new Vector3(
   Math.cos(YAW) * Math.cos(PITCH),
 ).multiplyScalar(DISTANCE);
 
+/**
+ * While following the CEO, the camera looks a little ahead of them (towards the camera, so the
+ * avatar sits above screen centre): the office in front fills the frame instead of the sky
+ * behind the back walls.
+ */
+const FOLLOW_AHEAD = { x: 2, z: 2 } as const;
+
 export const ZOOM_MIN = 18;
 export const ZOOM_MAX = 120;
 const FOLLOW_RATE = 5;
@@ -37,7 +44,7 @@ export function CameraRig() {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const invalidate = useThree((s) => s.invalidate);
-  const target = useRef(new Vector3(ceo.x, 0, ceo.z));
+  const target = useRef(new Vector3(ceo.x + FOLLOW_AHEAD.x, 0, ceo.z + FOLLOW_AHEAD.z));
   const zoomGoal = useRef(initialZoom());
 
   useLayoutEffect(() => {
@@ -113,8 +120,8 @@ export function CameraRig() {
     if (!isOrtho(cam)) return;
     const dt = Math.min(rawDt, 0.05);
     const t = target.current;
-    const gx = focus.mode === "ceo" ? ceo.x : focus.x;
-    const gz = focus.mode === "ceo" ? ceo.z : focus.z;
+    const gx = focus.mode === "ceo" ? ceo.x + FOLLOW_AHEAD.x : focus.x;
+    const gz = focus.mode === "ceo" ? ceo.z + FOLLOW_AHEAD.z : focus.z;
     const dist = Math.hypot(gx - t.x, gz - t.z);
     const zoomDiff = zoomGoal.current - cam.zoom;
     const settled = dist < 0.003 && Math.abs(zoomDiff) < 0.01;

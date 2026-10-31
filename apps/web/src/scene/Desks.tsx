@@ -1,22 +1,26 @@
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { Color, Object3D, type InstancedMesh } from "three";
+import { BoxGeometry, Color, Matrix4, Object3D, PlaneGeometry, type InstancedMesh } from "three";
 import type { Team } from "@studio/shared";
 import { useOfficeStore } from "../store/officeStore";
-import { chairGeometry, deskGeometry, monitorGeometry, screenGeometry } from "./furniture";
 import { capacityFor, commitColors, commitMatrices, ensureInstanceColor, MATERIALS } from "./instancing";
-import { approachTile, chairPosition, deskCenter } from "./layout";
-import { STATUS_COLOR } from "./palette";
-import { CLICK_SLOP_PX, focusPoint, isTapSuppressed, walkToTile } from "./runtime";
+import { approachTile, cellOrigin, deskCenter, POD, seatOf, SEATS_PER_POD } from "./layout";
+import type { SeatAssignment } from "./members";
+import { screenMatrix } from "./officeBuild";
+import { PALETTE, STATUS_COLOR } from "./palette";
+import { CLICK_SLOP_PX, focusPoint, isTapSuppressed, setHoverTeam, walkToTile } from "./runtime";
 
 const PULSE_HZ = 1.2;
 
 const dummy = new Object3D();
+const m = new Matrix4();
 const color = new Color();
 const blockedDim = new Color(STATUS_COLOR.blocked).multiplyScalar(0.35);
 const blockedLit = new Color(STATUS_COLOR.blocked);
+const screenGeo = new PlaneGeometry(1, 1);
+const hitGeo = new BoxGeometry(1, 1, 1);
 
-/** CEO walks to the free tile behind the chair, camera flies to the desk, team is selected. */
+/** CEO walks to the free tile behind the lead's chair, camera flies to the pod, team is selected. */
 export function goToTeam(team: Team): void {
   walkToTile(approachTile(team.slot));
   focusPoint(deskCenter(team.slot));
@@ -25,51 +29,59 @@ export function goToTeam(team: Team): void {
 
 interface Props {
   teams: Team[];
+  seats: Map<string, SeatAssignment>;
 }
 
-/** Desks, chairs, monitor frames and glowing screens: four instanced draw calls for any team count. */
-export function Desks({ teams }: Props) {
-  const desks = useRef<InstancedMesh>(null);
-  const chairs = useRef<InstancedMesh>(null);
-  const monitors = useRef<InstancedMesh>(null);
+/**
+ * Monitor screens of every pod (one instanced, unlit draw call): the lead's screen glows in the
+ * team's status colour, members' screens light up while their seat is taken. Invisible pod hit
+ * boxes (no draw call) make a click anywhere on a pod open that team.
+ */
+export function Desks({ teams, seats }: Props) {
   const screens = useRef<InstancedMesh>(null);
-  const capacity = capacityFor(teams.length);
-  const blockedIdx = useMemo(() => teams.flatMap((t, i) => (t.status === "blocked" ? [i] : [])), [teams]);
+  const hits = useRef<InstancedMesh>(null);
+  const screenCount = teams.length * SEATS_PER_POD;
+  const screenCap = capacityFor(screenCount);
+  const hitCap = capacityFor(teams.length);
+  const blockedIdx = useMemo(() => teams.flatMap((t, i) => (t.status === "blocked" ? [i * SEATS_PER_POD] : [])), [teams]);
 
   useLayoutEffect(() => {
-    const meshes = [desks.current, chairs.current, monitors.current, screens.current];
-    teams.forEach((team, i) => {
-      const desk = deskCenter(team.slot);
-      dummy.position.set(desk.x, 0, desk.z);
+    const s = screens.current;
+    const h = hits.current;
+    if (!s || !h) return;
+    teams.forEach((team, t) => {
+      for (let i = 0; i < SEATS_PER_POD; i++) s.setMatrixAt(t * SEATS_PER_POD + i, screenMatrix(seatOf(team.slot, i), m));
+      const o = cellOrigin(team.slot);
+      dummy.position.set(o.x + POD.x + POD.w / 2, 0.5, o.z + POD.z + POD.d / 2);
+      dummy.scale.set(POD.w, 1, POD.d);
       dummy.updateMatrix();
-      desks.current?.setMatrixAt(i, dummy.matrix);
-      dummy.position.set(desk.x, 0, desk.z - 0.22);
-      dummy.updateMatrix();
-      monitors.current?.setMatrixAt(i, dummy.matrix);
-      screens.current?.setMatrixAt(i, dummy.matrix);
-      const chair = chairPosition(team.slot);
-      dummy.position.set(chair.x, 0, chair.z);
-      dummy.updateMatrix();
-      chairs.current?.setMatrixAt(i, dummy.matrix);
+      h.setMatrixAt(t, dummy.matrix);
     });
-    for (const m of meshes) if (m) commitMatrices(m, teams.length);
-  }, [teams, capacity]);
+    commitMatrices(s, screenCount);
+    commitMatrices(h, teams.length);
+  }, [teams, screenCount, screenCap, hitCap]);
 
   useLayoutEffect(() => {
-    const mesh = screens.current;
-    if (!mesh) return;
-    ensureInstanceColor(mesh, capacity);
-    teams.forEach((team, i) => mesh.setColorAt(i, color.set(STATUS_COLOR[team.status] ?? STATUS_COLOR.unknown)));
-    commitColors(mesh);
-  }, [teams, capacity]);
+    const s = screens.current;
+    if (!s) return;
+    ensureInstanceColor(s, screenCap);
+    teams.forEach((team, t) => {
+      s.setColorAt(t * SEATS_PER_POD, color.set(STATUS_COLOR[team.status] ?? STATUS_COLOR.unknown));
+      const taken = new Set(seats.get(team.id)?.seats.values() ?? []);
+      for (let i = 1; i < SEATS_PER_POD; i++) {
+        s.setColorAt(t * SEATS_PER_POD + i, color.set(taken.has(i) ? PALETTE.screenMember : PALETTE.screenOff));
+      }
+    });
+    commitColors(s);
+  }, [teams, seats, screenCap]);
 
   useFrame(({ clock }) => {
-    const mesh = screens.current;
-    if (!mesh || blockedIdx.length === 0) return;
+    const s = screens.current;
+    if (!s || blockedIdx.length === 0) return;
     const k = 0.5 + 0.5 * Math.sin(clock.getElapsedTime() * Math.PI * 2 * PULSE_HZ);
     color.copy(blockedDim).lerp(blockedLit, k);
-    for (const i of blockedIdx) mesh.setColorAt(i, color);
-    commitColors(mesh);
+    for (const i of blockedIdx) s.setColorAt(i, color);
+    commitColors(s);
   });
 
   const onClick = (e: ThreeEvent<MouseEvent>) => {
@@ -79,12 +91,22 @@ export function Desks({ teams }: Props) {
     if (team) goToTeam(team);
   };
 
+  const onHover = (e: ThreeEvent<PointerEvent>) => {
+    if (e.pointerType !== "mouse" || e.instanceId === undefined) return;
+    setHoverTeam(teams[e.instanceId]?.id ?? null);
+  };
+
   return (
     <group>
-      <instancedMesh key={`d${capacity}`} ref={desks} args={[deskGeometry(), MATERIALS.vertex, capacity]} onClick={onClick} />
-      <instancedMesh key={`c${capacity}`} ref={chairs} args={[chairGeometry(), MATERIALS.vertex, capacity]} onClick={onClick} />
-      <instancedMesh key={`m${capacity}`} ref={monitors} args={[monitorGeometry(), MATERIALS.vertex, capacity]} onClick={onClick} />
-      <instancedMesh key={`s${capacity}`} ref={screens} args={[screenGeometry(), MATERIALS.screen, capacity]} onClick={onClick} />
+      <instancedMesh key={`s${screenCap}`} ref={screens} args={[screenGeo, MATERIALS.screen, screenCap]} raycast={() => null} />
+      <instancedMesh
+        key={`h${hitCap}`}
+        ref={hits}
+        args={[hitGeo, MATERIALS.hit, hitCap]}
+        onClick={onClick}
+        onPointerMove={onHover}
+        onPointerOut={() => setHoverTeam(null)}
+      />
     </group>
   );
 }

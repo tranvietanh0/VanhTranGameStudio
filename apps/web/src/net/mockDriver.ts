@@ -1,7 +1,7 @@
 import type { ClientMessage, Team } from "@studio/shared";
 import { useOfficeStore } from "../store/officeStore";
 import { applyServerMessage } from "./dispatch";
-import { makeMockQuestion, makeMockTeam, pick } from "./mockWorld";
+import { makeMockMember, makeMockQuestion, makeMockTeam, pick } from "./mockWorld";
 import { setTransport, type Transport } from "./transport";
 
 const STATUS_TICK_MS = 2_500;
@@ -9,15 +9,28 @@ const QUESTION_EVERY_MS = 20_000;
 const QUESTION_TTL_MS = 60_000;
 const ACK_DELAY_MS = 200;
 const CALM_STATUSES = ["idle", "working", "done", "unknown"] as const;
+/** A lead spawns or dismisses one subagent this often, aiming at a random target of 0..4. */
+const MEMBER_TICK_MS = 1_800;
+const MAX_MOCK_MEMBERS = 4;
+/** One team is allowed past the pod's five seats so the "+N" badge shows up too. */
+const CROWDED_TEAM_INDEX = 1;
+const CROWDED_MAX = 7;
 
 /**
- * Runs the office with no server: fake teams whose status drifts, a fake lead question every
- * ~20s, and local answers for question.answer / team.create / team.prompt. Terminal messages are
- * accepted and dropped, so the panel stays blank in mock mode.
+ * Runs the office with no server: fake teams whose status drifts, subagents that come and go
+ * (0..4 per lead, one crowded team up to 7), a fake lead question every ~20s, and local answers
+ * for question.answer / team.create / team.prompt. Terminal messages are accepted and dropped,
+ * so the panel stays blank in mock mode.
  */
 export function startMock(count: number): () => void {
   useOfficeStore.getState().setConnection("mock");
-  const teams = Array.from({ length: count }, (_, i) => makeMockTeam(i));
+  let memberSeq = 0;
+  const now = Date.now();
+  const teams = Array.from({ length: count }, (_, i) => {
+    const team = makeMockTeam(i);
+    const initial = i === CROWDED_TEAM_INDEX ? CROWDED_MAX : Math.floor(Math.random() * 3);
+    return { ...team, members: Array.from({ length: initial }, () => makeMockMember(++memberSeq, now)) };
+  });
   applyServerMessage({ type: "hello", teams, questions: [], herdrConnected: true });
 
   let seq = 0;
@@ -59,6 +72,7 @@ export function startMock(count: number): () => void {
             agent: "claude",
             status: "idle",
             slot: existing,
+            members: [],
           };
           applyServerMessage({ type: "team.upsert", team });
           ackLater(msg.requestId);
@@ -84,6 +98,24 @@ export function startMock(count: number): () => void {
     applyServerMessage({ type: "team.upsert", team: { ...team, status: pick(CALM_STATUSES) } });
   }, STATUS_TICK_MS);
 
+  const memberTimer = setInterval(() => {
+    const all = Object.values(useOfficeStore.getState().teams);
+    if (all.length === 0) return;
+    const team = pick(all);
+    const cap = team.slot === CROWDED_TEAM_INDEX ? CROWDED_MAX : MAX_MOCK_MEMBERS;
+    const target = Math.floor(Math.random() * (cap + 1));
+    let members = team.members;
+    if (members.length < target) members = [...members, makeMockMember(++memberSeq, Date.now())];
+    else if (members.length > target) {
+      const leaving = pick(members);
+      members = members.filter((m) => m !== leaving);
+    }
+    else return;
+    // A lead with helpers is busy.
+    const status = members.length > 0 && team.status !== "blocked" ? "working" : team.status;
+    applyServerMessage({ type: "team.upsert", team: { ...team, members, status } });
+  }, MEMBER_TICK_MS);
+
   const questionTimer = setInterval(() => {
     const candidates = Object.values(useOfficeStore.getState().teams).filter((t) => t.status !== "blocked");
     if (candidates.length === 0) return;
@@ -101,6 +133,7 @@ export function startMock(count: number): () => void {
 
   return () => {
     clearInterval(statusTimer);
+    clearInterval(memberTimer);
     clearInterval(questionTimer);
     for (const ttl of ttlTimers) clearTimeout(ttl);
     ttlTimers.clear();

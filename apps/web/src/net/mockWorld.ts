@@ -1,4 +1,4 @@
-import type { AgentStatus, LeadQuestion, Team } from "@studio/shared";
+import type { AgentStatus, LeadQuestion, Team, TeamMember } from "@studio/shared";
 
 const PROJECT_NAMES = [
   "kho-hang", "cham-soc-khach", "ke-toan", "game-lobby", "analytics",
@@ -47,7 +47,22 @@ export function makeMockTeam(index: number, random: () => number = Math.random):
     agent: "claude",
     status: pick(INITIAL_STATUSES, random),
     slot: index,
+    members: [],
   };
+}
+
+const MEMBER_TEMPLATES = [
+  { agentType: "Explore", description: "Tìm chỗ xử lý đăng nhập trong repo" },
+  { agentType: "general-purpose", description: "Viết test cho module thanh toán" },
+  { agentType: "t1k-tester", description: "Chạy bộ test và tóm tắt lỗi" },
+  { agentType: "t1k-code-reviewer", description: "Review PR #42 về cache" },
+  { agentType: "t1k-scout", description: "Dò các nơi gọi hàm tính thuế" },
+  { agentType: "Plan", description: "Lên kế hoạch tách service đơn hàng" },
+] as const;
+
+export function makeMockMember(seq: number, now: number, random: () => number = Math.random): TeamMember {
+  const template = pick(MEMBER_TEMPLATES, random);
+  return { id: `mock-agent-${seq}`, agentType: template.agentType, description: template.description, startedAt: now };
 }
 
 /** Alternates the two kinds so both dialog variants get exercised. */
