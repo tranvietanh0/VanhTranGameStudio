@@ -1,0 +1,19 @@
+{
+  "name": "vanhtran-game-studio",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '@studio/web' build",
+    "start": "bun run --filter '@studio/server' start",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun test",
+    "lint": "biome check ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}
