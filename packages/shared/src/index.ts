@@ -20,6 +20,19 @@ export interface Team {
   status: AgentStatus;
   /** Desk slot in the office grid; assigned by the server and persisted. */
   slot: number;
+  /** Subagents the lead has spawned that are still alive (from Claude hooks). */
+  members: TeamMember[];
+}
+
+/** A subagent working for a team lead. */
+export interface TeamMember {
+  /** Claude `agent_id` from SubagentStart/SubagentStop. */
+  id: string;
+  /** Claude `agent_type`, e.g. "Explore", "general-purpose". */
+  agentType: string;
+  /** Task description the lead gave (Agent tool `description`), if captured. */
+  description: string;
+  startedAt: number;
 }
 
 export interface AskOption {
@@ -89,7 +102,7 @@ export type ClientMessage =
 export interface HookEvent {
   /** herdr pane id from $HERDR_PANE_ID, injected into every herdr pane. */
   paneId: string;
-  event: "PreToolUse" | "PostToolUse" | "Notification" | "Stop" | "SubagentStop";
+  event: "PreToolUse" | "PostToolUse" | "Notification" | "Stop" | "SubagentStart" | "SubagentStop";
   /** Raw hook stdin JSON from Claude Code. */
   payload: Record<string, unknown>;
 }
