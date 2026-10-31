@@ -1,0 +1,24 @@
+{
+  "type": "session_snapshot",
+  "snapshot": {
+    "version": "0.9.3",
+    "protocol": 22,
+    "focused_workspace_id": "w1",
+    "focused_tab_id": "w1:t1",
+    "focused_pane_id": "w1:p1",
+    "workspaces": [
+      { "workspace_id": "w1", "number": 1, "label": "game-demo", "focused": true, "pane_count": 2, "tab_count": 1, "active_tab_id": "w1:t1", "agent_status": "working" },
+      { "workspace_id": "w2", "number": 2, "label": "web-demo", "focused": false, "pane_count": 1, "tab_count": 1, "active_tab_id": "w2:t1", "agent_status": "unknown" }
+    ],
+    "tabs": [],
+    "panes": [
+      { "pane_id": "w1:p1", "terminal_id": "term_aaa111", "workspace_id": "w1", "tab_id": "w1:t1", "focused": true, "cwd": "C:\\Projects\\Demo\\Game", "terminal_title": "claude", "agent_status": "working", "revision": 12 },
+      { "pane_id": "w1:p2", "terminal_id": "term_aaa222", "workspace_id": "w1", "tab_id": "w1:t1", "focused": false, "cwd": "C:\\Projects\\Demo\\Game\\", "terminal_title": "pwsh", "agent_status": "blocked", "revision": 4 },
+      { "pane_id": "w2:p1", "terminal_id": "term_bbb333", "workspace_id": "w2", "tab_id": "w2:t1", "focused": false, "cwd": "C:\\Users\\demo", "terminal_title": "pwsh", "agent_status": "unknown", "revision": 1 }
+    ],
+    "layouts": [],
+    "agents": [
+      { "pane_id": "w1:p1", "terminal_id": "term_aaa111", "workspace_id": "w1", "tab_id": "w1:t1", "focused": true, "agent": "claude", "agent_status": "working", "revision": 9 }
+    ]
+  }
+}
